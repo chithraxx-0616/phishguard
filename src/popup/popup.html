@@ -6,21 +6,60 @@
 </head>
 <body>
   <div id="app">
+
     <header>
-      <span class="logo">PhishGuard</span>
-      <span id="risk-badge" class="badge">Scanning...</span>
+      <div class="logo">
+        <div class="logo-icon">PG</div>
+        <span>PhishGuard</span>
+      </div>
+      <div id="risk-badge" class="badge badge-scanning">Scanning...</div>
     </header>
+
     <div id="score-section">
-      <canvas id="gauge" width="160" height="90"></canvas>
-      <div id="score-number">--</div>
+      <div class="gauge-wrap">
+        <svg viewBox="0 0 120 70" class="gauge-svg">
+          <path d="M10,60 A50,50 0 0,1 110,60" fill="none" stroke="#1e1e2e" stroke-width="10" stroke-linecap="round"/>
+          <path id="gauge-arc" d="M10,60 A50,50 0 0,1 110,60" fill="none" stroke="#27ae60" stroke-width="10" stroke-linecap="round" stroke-dasharray="157" stroke-dashoffset="157"/>
+        </svg>
+        <div class="gauge-center">
+          <div id="score-number">0</div>
+          <div class="score-label">Risk Score</div>
+        </div>
+      </div>
+      <div class="score-meta">
+        <div class="meta-item">
+          <div class="meta-label">Domain</div>
+          <div id="meta-domain" class="meta-value">--</div>
+        </div>
+        <div class="meta-item">
+          <div class="meta-label">Protocol</div>
+          <div id="meta-protocol" class="meta-value">--</div>
+        </div>
+        <div class="meta-item">
+          <div class="meta-label">Threats</div>
+          <div id="meta-threats" class="meta-value">0</div>
+        </div>
+      </div>
     </div>
-    <div id="breakdown"></div>
-    <div id="domain-info"></div>
+
+    <div id="breakdown-section">
+      <div class="section-title">Threat Breakdown</div>
+      <div id="breakdown-list">
+        <div class="no-threats">No threats detected on this page</div>
+      </div>
+    </div>
+
+    <div id="actions-section">
+      <button id="btn-safe" class="btn btn-safe">Mark as Safe</button>
+      <button id="btn-report" class="btn btn-danger">Report Phishing</button>
+    </div>
+
     <footer>
-      <button id="btn-safe">Mark as Safe</button>
-      <button id="btn-report">Report Phishing</button>
+      <span>PhishGuard v1.0</span>
+      <a id="dashboard-link" href="#">View History</a>
     </footer>
+
   </div>
-  <script type="module" src="popup.js"></script>
+  <script src="popup.js"></script>
 </body>
 </html>
