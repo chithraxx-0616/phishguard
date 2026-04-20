@@ -1,8 +1,97 @@
+// ============ INDEXEDDB BLOCKLIST ============
+var phishDB = null;
+var blockedDomains = new Set([
+  "paypal-secure-login.com","accounts-google-verify.com",
+  "amazon-security-alert.com","appleid-verify-account.com",
+  "microsoft-account-verify.com","netflix-billing-update.com",
+  "secure-bankofamerica-login.com","chase-secure-login.net",
+  "wellsfargo-verify.com","instagram-verify-account.com",
+  "facebook-security-check.com","twitter-account-suspended.com",
+  "linkedin-account-verify.net","dropbox-secure-share.com",
+  "steam-trade-offer.net","coinbase-wallet-verify.com",
+  "blockchain-wallet-login.net","binance-secure-login.com",
+  "crypto-wallet-verify.net","irs-tax-refund-2024.com",
+  "fedex-delivery-tracking.net","dhl-package-tracking.com",
+  "usps-delivery-failed.net","amazon-prime-renewal.net",
+  "netflix-account-suspended.com","apple-id-locked-verify.com",
+  "google-account-recovery.net","microsoft-security-alert.net",
+  "paypal-account-limited.net","ebay-account-verify.com"
+]);
+
+function isBlocklisted(hostname) {
+  var clean = hostname.replace(/^www\./, '').toLowerCase();
+  if (blockedDomains.has(clean)) return true;
+  for (var d of blockedDomains) {
+    if (clean.endsWith('.' + d) || clean === d) return true;
+  }
+  return false;
+}
 const logger = {
   info:  (...args) => console.log('[PhishGuard]', ...args),
   warn:  (...args) => console.warn('[PhishGuard]', ...args),
   error: (...args) => console.error('[PhishGuard]', ...args),
 };
+// ============ SAFE BROWSING CACHE ============
+var sbCache = new Map();
+
+function checkSafeBrowsingAPI(url, tabId, currentResult) {
+  if (sbCache.has(url)) {
+    var cached = sbCache.get(url);
+    if (cached.flagged) {
+      currentResult.score = 100;
+      currentResult.risk = 'high';
+      currentResult.ruleHits.unshift({
+        triggered: true,
+        weight: 100,
+        reason: cached.reason
+      });
+      chrome.tabs.sendMessage(tabId, { type: 'PHISHGUARD_WARN', result: currentResult }).catch(function() {});
+      updateBadge(tabId, 'high');
+    }
+    return;
+  }
+
+  var API_KEY = 'AIzaSyBO4rZKO-6QOUUqRijjJ7j3cTIy1wsFl70';
+  var body = {
+    client: { clientId: 'phishguard', clientVersion: '1.0.0' },
+    threatInfo: {
+      threatTypes: ['MALWARE', 'SOCIAL_ENGINEERING', 'UNWANTED_SOFTWARE'],
+      platformTypes: ['ANY_PLATFORM'],
+      threatEntryTypes: ['URL'],
+      threatEntries: [{ url: url }]
+    }
+  };
+
+  fetch('https://safebrowsing.googleapis.com/v4/threatMatches:find?key=' + API_KEY, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  })
+  .then(function(res) { return res.json(); })
+  .then(function(data) {
+    if (data.matches && data.matches.length > 0) {
+      var threatType = data.matches[0].threatType;
+      var sbResult = {
+        flagged: true,
+        reason: 'Google Safe Browsing flagged: ' + threatType.replace(/_/g, ' ')
+      };
+      sbCache.set(url, sbResult);
+
+      currentResult.score = 100;
+      currentResult.risk = 'high';
+      currentResult.ruleHits.unshift({ triggered: true, weight: 100, reason: sbResult.reason });
+      tabState.set(tabId, currentResult);
+      updateBadge(tabId, 'high');
+      chrome.tabs.sendMessage(tabId, { type: 'PHISHGUARD_WARN', result: currentResult }).catch(function() {});
+      logger.warn('Google Safe Browsing flagged: ' + url);
+    } else {
+      sbCache.set(url, { flagged: false });
+    }
+  })
+  .catch(function(err) {
+    logger.error('Safe Browsing API error:', err);
+  });
+}
 
 function parseURL(rawURL) {
   try {
@@ -120,14 +209,25 @@ chrome.webNavigation.onCommitted.addListener(function(details) {
   const frameId = details.frameId;
   if (frameId !== 0) return;
   if (SKIP.some(function(s) { return url.startsWith(s); })) return;
-  const result = analyzeURL(url);
+  var result = analyzeURL(url);
   if (!result) return;
+
+   if (isBlocklisted(result.parsed.hostname)) {
+    result.score = 100;
+    result.risk = 'high';
+    result.ruleHits = [{
+      triggered: true,
+      weight: 100,
+      reason: 'Domain found in PhishTank blocklist - confirmed phishing site'
+    }];
+  }
   tabState.set(tabId, result);
   updateBadge(tabId, result.risk);
   logger.info('[' + result.risk.toUpperCase() + '] ' + result.parsed.hostname + ' - score: ' + result.score);
   if (result.risk === 'high' || result.risk === 'medium') {
     chrome.tabs.sendMessage(tabId, { type: 'PHISHGUARD_WARN', result: result }).catch(function() {});
-  }
+  } 
+   checkSafeBrowsingAPI(url, tabId, result);
 });
 
 chrome.tabs.onRemoved.addListener(function(tabId) {
