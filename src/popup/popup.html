@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div id="app">
+    <header>
+      <span class="logo">PhishGuard</span>
+      <span id="risk-badge" class="badge">Scanning...</span>
+    </header>
+    <div id="score-section">
+      <canvas id="gauge" width="160" height="90"></canvas>
+      <div id="score-number">--</div>
+    </div>
+    <div id="breakdown"></div>
+    <div id="domain-info"></div>
+    <footer>
+      <button id="btn-safe">Mark as Safe</button>
+      <button id="btn-report">Report Phishing</button>
+    </footer>
+  </div>
+  <script type="module" src="popup.js"></script>
+</body>
+</html>

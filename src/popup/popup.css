@@ -1,0 +1,22 @@
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { width: 320px; min-height: 200px; font-family: -apple-system, sans-serif;
+       background: #0f1117; color: #e8e8e8; }
+header { display: flex; justify-content: space-between; align-items: center;
+         padding: 12px 16px; border-bottom: 1px solid #2a2a3a; }
+.logo { font-weight: 700; font-size: 15px; color: #7c6af7; }
+.badge { font-size: 11px; padding: 3px 10px; border-radius: 20px; font-weight: 600; }
+.badge.high   { background: #4a1515; color: #f87171; }
+.badge.medium { background: #4a3010; color: #fbbf24; }
+.badge.low    { background: #0f3a1a; color: #4ade80; }
+#score-section { display: flex; align-items: center; gap: 12px;
+                 padding: 14px 16px; border-bottom: 1px solid #2a2a3a; }
+#score-number { font-size: 36px; font-weight: 700; color: #fff; }
+#breakdown { padding: 10px 16px; }
+.rule-item { display: flex; gap: 8px; padding: 5px 0;
+             border-bottom: 1px solid #1e1e2e; font-size: 12px; }
+.rule-weight { background: #2a1a1a; color: #f87171;
+               padding: 1px 6px; border-radius: 4px; font-size: 11px; }
+footer { display: flex; gap: 8px; padding: 10px 16px; }
+footer button { flex: 1; padding: 7px; border: 1px solid #333; border-radius: 6px;
+                background: #1a1a2e; color: #ccc; cursor: pointer; font-size: 12px; }
+footer button:hover { background: #2a2a3e; }
