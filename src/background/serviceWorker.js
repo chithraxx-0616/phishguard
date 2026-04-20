@@ -193,6 +193,23 @@ function analyzeURL(rawURL) {
 }
 
 const tabState = new Map();
+// ============ THREAT HISTORY ============
+function saveThreatToHistory(result) {
+  if (result.risk === 'low') return;
+  chrome.storage.local.get({ threatHistory: [] }, function(data) {
+    var history = data.threatHistory;
+    history.unshift({
+      url: result.parsed.raw,
+      domain: result.parsed.domain,
+      score: result.score,
+      risk: result.risk,
+      reasons: result.ruleHits.map(function(h) { return h.reason; }),
+      timestamp: Date.now()
+    });
+    if (history.length > 100) history = history.slice(0, 100);
+    chrome.storage.local.set({ threatHistory: history });
+  });
+}
 
 function updateBadge(tabId, risk) {
   const colors = { high: '#e74c3c', medium: '#f39c12', low: '#27ae60' };
@@ -223,6 +240,7 @@ chrome.webNavigation.onCommitted.addListener(function(details) {
   }
   tabState.set(tabId, result);
   updateBadge(tabId, result.risk);
+  saveThreatToHistory(result);
   logger.info('[' + result.risk.toUpperCase() + '] ' + result.parsed.hostname + ' - score: ' + result.score);
   if (result.risk === 'high' || result.risk === 'medium') {
     chrome.tabs.sendMessage(tabId, { type: 'PHISHGUARD_WARN', result: result }).catch(function() {});

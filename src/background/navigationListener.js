@@ -14,6 +14,7 @@ export function registerNavigationListener() {
     if (!result) return;
 
     tabState.set(tabId, result);
+    saveThreatToHistory(result);
     updateBadge(tabId, result.risk);
     logger.info(`[${result.risk.toUpperCase()}] ${result.parsed.hostname} — score: ${result.score}`);
 

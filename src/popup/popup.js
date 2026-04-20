@@ -65,3 +65,8 @@ document.getElementById('btn-safe').addEventListener('click', function() {
 document.getElementById('btn-report').addEventListener('click', function() {
   alert('Thank you! This site has been reported as phishing.');
 });
+
+document.getElementById('dashboard-link').addEventListener('click', function(e) {
+  e.preventDefault();
+  chrome.tabs.create({ url: chrome.runtime.getURL('src/dashboard/dashboard.html') });
+});
