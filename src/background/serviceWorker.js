@@ -193,6 +193,43 @@ function analyzeURL(rawURL) {
 }
 
 const tabState = new Map();
+// ============ REDIRECT CHAIN TRACKER ============
+var redirectChains = new Map();
+
+chrome.webNavigation.onBeforeNavigate.addListener(function(details) {
+  if (details.frameId !== 0) return;
+  if (!redirectChains.has(details.tabId)) {
+    redirectChains.set(details.tabId, []);
+  }
+});
+
+chrome.webNavigation.onCommitted.addListener(function(details) {
+  if (details.frameId !== 0) return;
+  var SKIP = ['chrome://', 'chrome-extension://', 'about:', 'data:'];
+  if (SKIP.some(function(s) { return details.url.startsWith(s); })) return;
+
+  var chain = redirectChains.get(details.tabId) || [];
+  var isRedirect = details.transitionQualifiers &&
+    details.transitionQualifiers.indexOf('server_redirect') !== -1;
+
+  if (isRedirect || chain.length === 0) {
+    try {
+      var u = new URL(details.url);
+      chain.push({
+        url: details.url,
+        domain: u.hostname,
+        protocol: u.protocol,
+        isRedirect: isRedirect,
+        timestamp: Date.now()
+      });
+      redirectChains.set(details.tabId, chain);
+    } catch(e) {}
+  }
+}, { url: [{ schemes: ['http', 'https'] }] });
+
+chrome.tabs.onRemoved.addListener(function(tabId) {
+  redirectChains.delete(tabId);
+});
 // ============ THREAT HISTORY ============
 function saveThreatToHistory(result) {
   if (result.risk === 'low') return;
@@ -256,7 +293,11 @@ chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
   if (msg.type === 'GET_TAB_STATE') {
     chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
       var tab = tabs[0];
-      sendResponse(tab ? (tabState.get(tab.id) || null) : null);
+      var state = tab ? (tabState.get(tab.id) || null) : null;
+      if (state) {
+        state.redirectChain = redirectChains.get(tab.id) || [];
+      }
+      sendResponse(state);
     });
     return true;
   }

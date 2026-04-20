@@ -186,3 +186,33 @@ footer {
 
 footer a { color: #7c6af7; text-decoration: none; }
 footer a:hover { text-decoration: underline; }
+.redirect-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 6px;
+  font-size: 12px;
+}
+.redirect-dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  margin-top: 3px;
+  flex-shrink: 0;
+}
+.redirect-dot.safe   { background: #22c55e; }
+.redirect-dot.warn   { background: #f59e0b; }
+.redirect-dot.danger { background: #ef4444; }
+.redirect-line {
+  width: 2px; height: 12px;
+  background: #2a2a4a;
+  margin-left: 4px;
+}
+.redirect-domain { color: #c8c8e0; font-weight: 500; }
+.redirect-badge {
+  font-size: 10px;
+  padding: 1px 5px;
+  border-radius: 3px;
+  background: #3a2a00;
+  color: #fbbf24;
+  margin-left: 4px;
+}

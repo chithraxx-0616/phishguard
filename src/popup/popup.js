@@ -29,6 +29,68 @@ function renderBreakdown(ruleHits) {
   });
 }
 
+function renderRedirectChain(chain) {
+  if (!chain || chain.length <= 1) return;
+
+  var section = document.getElementById('redirect-section');
+  var container = document.getElementById('redirect-chain');
+  section.style.display = 'block';
+  container.innerHTML = '';
+
+  chain.forEach(function(step, i) {
+    var isHttp = step.protocol === 'http:';
+    var dotClass = isHttp ? 'danger' : 'safe';
+
+    var div = document.createElement('div');
+    div.className = 'redirect-step';
+
+    var col = document.createElement('div');
+    col.style.display = 'flex';
+    col.style.flexDirection = 'column';
+    col.style.alignItems = 'center';
+
+    var dot = document.createElement('div');
+    dot.className = 'redirect-dot ' + dotClass;
+
+    col.appendChild(dot);
+
+    if (i < chain.length - 1) {
+      var line = document.createElement('div');
+      line.className = 'redirect-line';
+      col.appendChild(line);
+    }
+
+    var info = document.createElement('div');
+    info.style.flex = '1';
+
+    var domain = document.createElement('span');
+    domain.className = 'redirect-domain';
+    domain.textContent = (i === 0 ? 'Origin: ' : i === chain.length - 1 ? 'Final: ' : 'Hop ' + i + ': ') + step.domain;
+
+    info.appendChild(domain);
+
+    if (isHttp) {
+      var badge = document.createElement('span');
+      badge.className = 'redirect-badge';
+      badge.textContent = 'HTTP';
+      info.appendChild(badge);
+    }
+
+    if (step.isRedirect) {
+      var rbadge = document.createElement('span');
+      rbadge.className = 'redirect-badge';
+      rbadge.style.background = '#1e1e3a';
+      rbadge.style.color = '#a78bfa';
+      rbadge.textContent = 'redirected';
+      info.appendChild(rbadge);
+    }
+
+    div.appendChild(col);
+    div.appendChild(info);
+    container.appendChild(div);
+  });
+}
+
 function renderPopup(result) {
   if (!result) {
     document.getElementById('risk-badge').textContent = 'SAFE';
@@ -52,6 +114,7 @@ function renderPopup(result) {
 
   setGaugeColor(result.score);
   renderBreakdown(result.ruleHits);
+  renderRedirectChain(result.redirectChain); // <-- added here
 }
 
 chrome.runtime.sendMessage({ type: 'GET_TAB_STATE' }, function(result) {
