@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>PhishGuard Settings</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,sans-serif;background:#0d0d1f;color:#e8e8f0;min-height:100vh}
+header{background:#080812;padding:14px 24px;border-bottom:1px solid #1a1a3a;display:flex;align-items:center;gap:10px}
+.logo-icon{width:28px;height:28px;background:#7c3aed;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:white}
+.logo-text{font-size:15px;font-weight:700;color:#a78bfa}
+.container{max-width:600px;margin:0 auto;padding:24px}
+.section{background:#080812;border:1px solid #1a1a3a;border-radius:12px;padding:20px;margin-bottom:16px}
+.section-title{font-size:13px;font-weight:600;color:#c8c8e0;margin-bottom:4px}
+.section-desc{font-size:12px;color:#6b6b8a;margin-bottom:16px}
+.setting-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid #0f0f1e}
+.setting-row:last-child{border-bottom:none}
+.setting-label{font-size:13px;color:#c8c8e0}
+.setting-sub{font-size:11px;color:#6b6b8a;margin-top:2px}
+.toggle{position:relative;width:40px;height:22px;flex-shrink:0}
+.toggle input{opacity:0;width:0;height:0}
+.slider{position:absolute;top:0;left:0;right:0;bottom:0;background:#1a1a3a;border-radius:22px;cursor:pointer;transition:0.3s}
+.slider:before{position:absolute;content:"";height:16px;width:16px;left:3px;bottom:3px;background:white;border-radius:50%;transition:0.3s}
+input:checked + .slider{background:#7c3aed}
+input:checked + .slider:before{transform:translateX(18px)}
+.range-wrap{display:flex;align-items:center;gap:10px;width:200px}
+input[type=range]{flex:1}
+.range-val{font-size:12px;color:#a78bfa;width:30px;text-align:right;font-weight:700}
+.allowlist-input{display:flex;gap:8px;margin-bottom:10px}
+.allowlist-input input{flex:1;background:#0d0d1f;border:1px solid #1a1a3a;border-radius:6px;padding:7px 12px;color:#e8e8f0;font-size:13px;outline:none}
+.allowlist-input input:focus{border-color:#7c3aed}
+.allowlist-input button{background:#7c3aed;color:white;border:none;border-radius:6px;padding:7px 14px;font-size:12px;font-weight:700;cursor:pointer}
+.allowlist-tags{display:flex;flex-wrap:wrap;gap:6px}
+.tag{background:#1a1a3a;border:1px solid #2a2a4a;border-radius:20px;padding:3px 10px;font-size:12px;color:#c8c8e0;display:flex;align-items:center;gap:6px}
+.tag-remove{color:#f87171;cursor:pointer;font-size:14px;line-height:1}
+.save-btn{width:100%;background:#7c3aed;color:white;border:none;border-radius:8px;padding:12px;font-size:14px;font-weight:700;cursor:pointer;margin-top:8px}
+.save-btn:hover{background:#6d28d9}
+.toast{position:fixed;bottom:24px;right:24px;background:#1a1a3a;border:1px solid #7c3aed;color:#e8e8f0;padding:10px 16px;border-radius:8px;font-size:13px;opacity:0;transition:opacity 0.3s;pointer-events:none}
+.toast.show{opacity:1}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo-icon">PG</div>
+  <span class="logo-text">PhishGuard Settings</span>
+</header>
+
+<div class="container">
+
+  <div class="section">
+    <div class="section-title">Detection Settings</div>
+    <div class="section-desc">Control how aggressively PhishGuard detects threats</div>
+
+    <div class="setting-row">
+      <div>
+        <div class="setting-label">Enable PhishGuard</div>
+        <div class="setting-sub">Turn protection on or off completely</div>
+      </div>
+      <label class="toggle">
+        <input type="checkbox" id="toggle-enabled" checked>
+        <span class="slider"></span>
+      </label>
+    </div>
+
+    <div class="setting-row">
+      <div>
+        <div class="setting-label">Show interstitial block page</div>
+        <div class="setting-sub">Full-screen warning for HIGH risk sites</div>
+      </div>
+      <label class="toggle">
+        <input type="checkbox" id="toggle-interstitial" checked>
+        <span class="slider"></span>
+      </label>
+    </div>
+
+    <div class="setting-row">
+      <div>
+        <div class="setting-label">Homoglyph detection</div>
+        <div class="setting-sub">Highlight fake lookalike characters</div>
+      </div>
+      <label class="toggle">
+        <input type="checkbox" id="toggle-homoglyph" checked>
+        <span class="slider"></span>
+      </label>
+    </div>
+
+    <div class="setting-row">
+      <div>
+        <div class="setting-label">Google Safe Browsing</div>
+        <div class="setting-sub">Cross-check with Google's threat database</div>
+      </div>
+      <label class="toggle">
+        <input type="checkbox" id="toggle-safebrowsing" checked>
+        <span class="slider"></span>
+      </label>
+    </div>
+
+    <div class="setting-row">
+      <div style="flex:1">
+        <div class="setting-label">Sensitivity threshold</div>
+        <div class="setting-sub">Higher = more warnings, lower = fewer false positives</div>
+      </div>
+      <div class="range-wrap">
+        <input type="range" id="sensitivity" min="10" max="80" value="30">
+        <span class="range-val" id="sensitivity-val">30</span>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="section">
+    <div class="section-title">Allowlist</div>
+    <div class="section-desc">Sites you trust — PhishGuard will never warn on these</div>
+    <div class="allowlist-input">
+      <input type="text" id="allowlist-input" placeholder="e.g. mybank.com">
+      <button id="allowlist-add">Add</button>
+    </div>
+    <div class="allowlist-tags" id="allowlist-tags"></div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Notifications</div>
+    <div class="section-desc">Control how PhishGuard alerts you</div>
+    <div class="setting-row">
+      <div>
+        <div class="setting-label">Browser notifications</div>
+        <div class="setting-sub">Show system notification for HIGH risk sites</div>
+      </div>
+      <label class="toggle">
+        <input type="checkbox" id="toggle-notifications">
+        <span class="slider"></span>
+      </label>
+    </div>
+    <div class="setting-row">
+      <div>
+        <div class="setting-label">Save threat history</div>
+        <div class="setting-sub">Keep a log of detected threats in dashboard</div>
+      </div>
+      <label class="toggle">
+        <input type="checkbox" id="toggle-history" checked>
+        <span class="slider"></span>
+      </label>
+    </div>
+  </div>
+
+  <button class="save-btn" id="save-btn">Save Settings</button>
+</div>
+
+<div class="toast" id="toast"></div>
+<script src="options.js"></script>
+</body>
+</html>

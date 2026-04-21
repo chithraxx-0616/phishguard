@@ -110,7 +110,11 @@ function showBanner(result) {
 
 chrome.runtime.onMessage.addListener(function(msg) {
   if (msg.type === 'PHISHGUARD_WARN') {
-    showBanner(msg.result);
+    if (msg.result.risk === 'high') {
+      showInterstitial(msg.result);
+    } else {
+      showBanner(msg.result);
+    }
     if (msg.result && msg.result.parsed && msg.result.parsed.hostname) {
       highlightHomoglyphs(msg.result.parsed.hostname);
     }

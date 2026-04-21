@@ -114,6 +114,25 @@ function renderPopup(result) {
 
   setGaugeColor(result.score);
   renderBreakdown(result.ruleHits);
+  // Show homoglyph warning in popup
+if (result.parsed && result.parsed.domain) {
+  var map = {'0':'o','1':'l','3':'e','4':'a','5':'s','6':'b','7':'t','8':'B'};
+  var domain = result.parsed.domain;
+  var found = [];
+  for (var i = 0; i < domain.length; i++) {
+    if (map[domain[i]]) {
+      found.push('"' + domain[i] + '" looks like "' + map[domain[i]] + '"');
+    }
+  }
+  if (found.length > 0) {
+    if (document.getElementById('homoglyph-warn')) document.getElementById('homoglyph-warn').remove();
+    var homoglyphDiv = document.createElement('div');
+    homoglyphDiv.id = 'homoglyph-warn';
+    homoglyphDiv.style.cssText = 'padding:8px 16px;background:#1a0a0a;border-top:1px solid #2a1a1a;font-size:11px;color:#fca5a5';
+    homoglyphDiv.innerHTML = 'Suspicious characters: ' + found.join(', ');
+    document.getElementById('app').insertBefore(homoglyphDiv, document.querySelector('footer'));
+  }
+}
   renderRedirectChain(result.redirectChain); // <-- added here
 }
 
