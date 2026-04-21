@@ -3,6 +3,11 @@
   "name": "PhishGuard",
   "version": "1.0.0",
   "description": "Real-time phishing detection with ML-powered URL analysis",
+  "icons": {
+    "16": "icon.png",
+    "48": "icon.png",
+    "128": "icon.png"
+  },
   "permissions": [
     "webNavigation",
     "webRequest",
